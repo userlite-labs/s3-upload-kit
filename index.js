@@ -67,23 +67,18 @@ class UploadKit {
     ];
 
     // Content-Type constraint
+    // Presigned POST policies are AND-only with no OR; S3 will reject any form
+    // field not covered by a condition. So we ALWAYS add a Content-Type condition —
+    // either exact-match, prefix-match, or unrestricted via starts-with ''.
     const allowedTypes = options.allowedContentTypes || this.allowedContentTypes;
-    if (allowedTypes && allowedTypes.length > 0) {
-      // If a single type is supplied, we can lock it exactly.
-      // For multiple types, we use starts-with on a common prefix if possible,
-      // otherwise we don't constrain (S3 POST doesn't support OR conditions).
-      if (allowedTypes.length === 1 && !allowedTypes[0].includes('*')) {
-        conditions.push({ 'Content-Type': allowedTypes[0] });
-      } else {
-        // Find a common starts-with prefix (e.g. ['image/*'] -> 'image/')
-        const prefixes = allowedTypes
-          .filter(t => t.endsWith('/*'))
-          .map(t => t.slice(0, -1));
-        if (prefixes.length === 1 && allowedTypes.length === 1) {
-          conditions.push(['starts-with', '$Content-Type', prefixes[0]]);
-        }
-        // Otherwise: accept anything at S3 level, validate on commit.
-      }
+    if (allowedTypes && allowedTypes.length === 1 && !allowedTypes[0].includes('*')) {
+      conditions.push({ 'Content-Type': allowedTypes[0] });
+    } else if (allowedTypes && allowedTypes.length === 1 && allowedTypes[0].endsWith('/*')) {
+      conditions.push(['starts-with', '$Content-Type', allowedTypes[0].slice(0, -1)]);
+    } else {
+      // Multiple types or no restriction: allow any Content-Type at S3 level,
+      // then enforce the actual rules on commit via HeadObject.
+      conditions.push(['starts-with', '$Content-Type', '']);
     }
 
     const presigned = await createPresignedPost(this.s3, {

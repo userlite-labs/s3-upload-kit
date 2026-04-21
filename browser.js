@@ -39,7 +39,10 @@ export async function uploadToS3(file, ticket, options = {}) {
     formData.append(k, v);
   }
   formData.append('key', key);
-  if (file.type) formData.append('Content-Type', file.type);
+  // Content-Type must be appended BEFORE the file field, and must match what
+  // the server's presigned policy allows. The server always includes a
+  // Content-Type condition in the policy for this reason.
+  formData.append('Content-Type', file.type || 'application/octet-stream');
   formData.append('file', file); // must be last
 
   await xhrUpload(ticket.url, formData, options);
