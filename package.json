@@ -1,0 +1,42 @@
+{
+  "name": "s3-upload-kit",
+  "version": "0.1.0",
+  "description": "Framework-agnostic direct-to-S3 upload helper. Presigned POST on the server, tiny XHR helper on the client.",
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/userlite-labs/s3-upload-kit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/userlite-labs/s3-upload-kit/issues"
+  },
+  "homepage": "https://github.com/userlite-labs/s3-upload-kit#readme",
+  "keywords": [
+    "s3",
+    "upload",
+    "presigned",
+    "post",
+    "aws",
+    "multipart",
+    "browser"
+  ],
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./browser.js"
+  },
+  "files": [
+    "index.js",
+    "browser.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.600.0",
+    "@aws-sdk/s3-presigned-post": "^3.600.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
